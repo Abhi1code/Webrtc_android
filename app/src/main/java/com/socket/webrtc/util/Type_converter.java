@@ -79,8 +79,8 @@ public class Type_converter {
             jObj.put("meta", meta);
             jObj.put("candidate", iceCandidate.sdp);
             jObj.put("connecteduser", conn_name);
-            jObj.put("type", iceCandidate.sdpMLineIndex);
-            jObj.put("id", iceCandidate.sdpMid);
+            jObj.put("sdpMLineIndex", iceCandidate.sdpMLineIndex);
+            jObj.put("sdpMid", iceCandidate.sdpMid);
             jObj.put("extra", "app");
 
             json = jObj.toString();
@@ -115,20 +115,16 @@ public class Type_converter {
         return jsonObject.getString("answer");
     }
 
-    public static String get_type(JSONObject jsonObject) throws JSONException{
-        return jsonObject.getString("type");
+    public static int get_sdpmlineIndex(JSONObject jsonObject) throws JSONException{
+        return jsonObject.getInt("sdpMLineIndex");
     }
 
-    public static Integer get_type_int(JSONObject jsonObject) throws JSONException{
-        return Integer.parseInt(jsonObject.getString("type"));
-    }
-
-    public static String get_id(JSONObject jsonObject) throws JSONException{
-        return jsonObject.getString("id");
+    public static String get_sdpmid(JSONObject jsonObject) throws JSONException{
+        return jsonObject.getString("sdpMid");
     }
 
     public static String get_candidate(JSONObject jsonObject) throws JSONException{
-        return jsonObject.getString("icecand");
+        return jsonObject.getString("candidate");
     }
 
     public static String getTime(String date){

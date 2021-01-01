@@ -32,6 +32,7 @@ import org.webrtc.Camera1Capturer;
 import org.webrtc.Camera1Enumerator;
 import org.webrtc.CameraEnumerator;
 import org.webrtc.CameraVideoCapturer;
+import org.webrtc.DataChannel;
 import org.webrtc.DefaultVideoDecoderFactory;
 import org.webrtc.DefaultVideoEncoderFactory;
 import org.webrtc.EglBase;
@@ -50,6 +51,7 @@ import org.webrtc.VideoSink;
 import org.webrtc.VideoSource;
 import org.webrtc.VideoTrack;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -74,6 +76,7 @@ public class Video_room extends AppCompatActivity implements Socketconnection.Se
     private PeerConnection localPeer;
     private String conn_user = null;
     EglBase rootEglBase;
+    DataChannel dataChannel;
 
     private final int MY_PERMISSIONS_REQUEST_CAMERA = 100;
     private final int MY_PERMISSIONS_REQUEST_RECORD_AUDIO = 101;
@@ -141,7 +144,8 @@ public class Video_room extends AppCompatActivity implements Socketconnection.Se
                     handleanswer(Type_converter.get_answer(jObj));
                     break;
                 case "handlecandidate":
-                    handleicecandidate(Type_converter.get_candidate(jObj), Type_converter.get_type_int(jObj), Type_converter.get_id(jObj));
+                    handleicecandidate(Type_converter.get_candidate(jObj), Type_converter.get_sdpmid(jObj),
+                            Type_converter.get_sdpmlineIndex(jObj));
                     break;
                 case "error":
                     close();
@@ -263,31 +267,33 @@ public class Video_room extends AppCompatActivity implements Socketconnection.Se
         DefaultVideoEncoderFactory defaultVideoEncoderFactory = new DefaultVideoEncoderFactory(
                 rootEglBase.getEglBaseContext(),  /* enableIntelVp8Encoder */true,  /* enableH264HighProfile */true);
         DefaultVideoDecoderFactory defaultVideoDecoderFactory = new DefaultVideoDecoderFactory(rootEglBase.getEglBaseContext());
-        peerConnectionFactory = new PeerConnectionFactory(options, defaultVideoEncoderFactory, defaultVideoDecoderFactory);
+        ///peerConnectionFactory = new PeerConnectionFactory(options, defaultVideoEncoderFactory, defaultVideoDecoderFactory);
+        peerConnectionFactory = PeerConnectionFactory.builder().setOptions(options)
+                .createPeerConnectionFactory();
 
         //Now create a VideoCapturer instance. Callback methods are there if you want to do something! Duh!
 //        VideoCapturer videoCapturerAndroid = getVideoCapturer(new CustomCameraEventsHandlers());
-        VideoCapturer videoCapturerAndroid = createVideoCapturer();
+        ///VideoCapturer videoCapturerAndroid = createVideoCapturer();
 
 
         //Create MediaConstraints - Will be useful for specifying video and audio constraints.
-        audioConstraints = new MediaConstraints();
-        videoConstraints = new MediaConstraints();
+        ///audioConstraints = new MediaConstraints();
+        ///videoConstraints = new MediaConstraints();
 
         //Create a VideoSource instance
-        if (videoCapturerAndroid != null) {
-            videoSource = peerConnectionFactory.createVideoSource(videoCapturerAndroid);
-        }
-        localVideoTrack = peerConnectionFactory.createVideoTrack("100", videoSource);
+        ///if (videoCapturerAndroid != null) {
+        ///    videoSource = peerConnectionFactory.createVideoSource(videoCapturerAndroid);
+        ///}
+        ///localVideoTrack = peerConnectionFactory.createVideoTrack("100", videoSource);
 
         //create an AudioSource instance
-        audioSource = peerConnectionFactory.createAudioSource(audioConstraints);
-        localAudioTrack = peerConnectionFactory.createAudioTrack("101", audioSource);
+        ///audioSource = peerConnectionFactory.createAudioSource(audioConstraints);
+        ///localAudioTrack = peerConnectionFactory.createAudioTrack("101", audioSource);
 
 
-        if (videoCapturerAndroid != null) {
-            videoCapturerAndroid.startCapture(1024, 720, 30);
-        }
+        ///if (videoCapturerAndroid != null) {
+        ///    videoCapturerAndroid.startCapture(1024, 720, 30);
+        ///}
         //create a videoRenderer based on SurfaceViewRenderer instance
         //localRenderer = new VideoRenderer(local_video);
         // And finally, with our VideoRenderer ready, we
@@ -301,7 +307,7 @@ public class Video_room extends AppCompatActivity implements Socketconnection.Se
 //                Log.d("ABHI", "frame");
 //            }
 //        },2);
-        VideoSink videoSink = new VideoSink() {
+        /*VideoSink videoSink = new VideoSink() {
             @Override
             public void onFrame(VideoFrame videoFrame) {
                //Log.d("ABHI", "frames cap");
@@ -314,7 +320,7 @@ public class Video_room extends AppCompatActivity implements Socketconnection.Se
         localVideoTrack.addSink(videoSink);
         //////////////////////////////////////////////////////////////////////
         local_video.setMirror(true);
-        remote_video.setMirror(true);
+        remote_video.setMirror(true);*/
 
         //creating peer connection
 
@@ -335,8 +341,8 @@ public class Video_room extends AppCompatActivity implements Socketconnection.Se
 
         //create sdpConstraints
         sdpConstraints = new MediaConstraints();
-        sdpConstraints.mandatory.add(new MediaConstraints.KeyValuePair("offerToReceiveAudio", "true"));
-        sdpConstraints.mandatory.add(new MediaConstraints.KeyValuePair("offerToReceiveVideo", "true"));
+        ///sdpConstraints.mandatory.add(new MediaConstraints.KeyValuePair("offerToReceiveAudio", "true"));
+        ///sdpConstraints.mandatory.add(new MediaConstraints.KeyValuePair("offerToReceiveVideo", "true"));
 
         //creating localPeer
 
@@ -344,12 +350,12 @@ public class Video_room extends AppCompatActivity implements Socketconnection.Se
                 new PeerConnection.RTCConfiguration(iceServers);
         // TCP candidates are only useful when connecting to a server that supports
         // ICE-TCP.
-        rtcConfig.tcpCandidatePolicy = PeerConnection.TcpCandidatePolicy.DISABLED;
+        /*rtcConfig.tcpCandidatePolicy = PeerConnection.TcpCandidatePolicy.DISABLED;
         rtcConfig.bundlePolicy = PeerConnection.BundlePolicy.MAXBUNDLE;
         rtcConfig.rtcpMuxPolicy = PeerConnection.RtcpMuxPolicy.REQUIRE;
         rtcConfig.continualGatheringPolicy = PeerConnection.ContinualGatheringPolicy.GATHER_CONTINUALLY;
         // Use ECDSA encryption.
-        rtcConfig.keyType = PeerConnection.KeyType.ECDSA;
+        rtcConfig.keyType = PeerConnection.KeyType.ECDSA;*/
         localPeer = peerConnectionFactory.createPeerConnection(rtcConfig, new CustomPeerConnectionObserver("localPeerCreation") {
             @Override
             public void onIceCandidate(IceCandidate iceCandidate) {
@@ -362,6 +368,12 @@ public class Video_room extends AppCompatActivity implements Socketconnection.Se
                 //showToast("Received Remote stream");
                 super.onAddStream(mediaStream);
                 addstream(mediaStream);
+            }
+
+            @Override
+            public void onDataChannel(DataChannel dataChannel) {
+                super.onDataChannel(dataChannel);
+                Log.e("ABHI", "New channel " + dataChannel.label());
             }
         });
 
@@ -387,11 +399,31 @@ public class Video_room extends AppCompatActivity implements Socketconnection.Se
 //        });
 
         //creating local mediastream
-        MediaStream stream = peerConnectionFactory.createLocalMediaStream("102");
+        /*MediaStream stream = peerConnectionFactory.createLocalMediaStream("102");
         stream.addTrack(localAudioTrack);
         stream.addTrack(localVideoTrack);
-        localPeer.addStream(stream);
+        localPeer.addStream(stream);*/
 
+        DataChannel.Init dcInit = new DataChannel.Init();
+        //dcInit.id = 1;
+        dataChannel = localPeer.createDataChannel("1", dcInit);
+        dataChannel.registerObserver(new CustomDataChannelObserver(){
+            @Override
+            public void onMessage(DataChannel.Buffer buffer) {
+                super.onMessage(buffer);
+                ByteBuffer data = buffer.data;
+                byte[] bytes = new byte[data.remaining()];
+                data.get(bytes);
+                final String command = new String(bytes);
+                Log.e("ABHI", "command received " + command );
+            }
+
+            @Override
+            public void onStateChange() {
+                super.onStateChange();
+                Log.d("ABHI", "command status ");
+            }
+        });
     }
 
     private void call(String name_to_call){
@@ -401,6 +433,7 @@ public class Video_room extends AppCompatActivity implements Socketconnection.Se
             @Override
             public void onCreateSuccess(SessionDescription sessionDescription) {
                 super.onCreateSuccess(sessionDescription);
+                Log.d("ABHI", sessionDescription.type.canonicalForm() + " des: " + sessionDescription.description);
                 String message = Type_converter.string_to_json_offer(login_session.getName(), "offer", name_to_call, sessionDescription);
                 socketconnection.sendMessage(message);
                 localPeer.setLocalDescription(new CustomSdpObserver("localSetLocalDesc"), sessionDescription);
@@ -432,14 +465,17 @@ public class Video_room extends AppCompatActivity implements Socketconnection.Se
 
     private void sendicecandidate(IceCandidate iceCandidate){
         if (conn_user != null && !TextUtils.isEmpty(conn_user)){
-
+//            Log.d("ABHI", "Ice candidate " + iceCandidate.toString() + " SDP " + iceCandidate.sdp
+//             + " sdpindexx " + iceCandidate.sdpMLineIndex + " sdmid " + iceCandidate.sdpMid
+//             + "serverurl " + iceCandidate.serverUrl);
             String message = Type_converter.string_to_json_candidate(login_session.getName(), "icecandidate", conn_user, iceCandidate);
             socketconnection.sendMessage(message);
         }
     }
 
-    private void handleicecandidate(String iceCandidate, Integer type, String id){
-        localPeer.addIceCandidate(new IceCandidate(id, type, iceCandidate));
+    private void handleicecandidate(String candidate, String sdpmid, int sdpmlineIndex){
+        Log.e("ABHI", "Handle ice candidates");
+        localPeer.addIceCandidate(new IceCandidate(sdpmid, sdpmlineIndex, candidate));
     }
 
     private void addstream(MediaStream mediaStream){
@@ -459,7 +495,9 @@ public class Video_room extends AppCompatActivity implements Socketconnection.Se
     }
 
     private void hangup() {
-
+        String data = "Hi this is abhi 1";
+        ByteBuffer buffer = ByteBuffer.wrap(data.getBytes());
+        dataChannel.send(new DataChannel.Buffer(buffer, false));
     }
 
     @Override
